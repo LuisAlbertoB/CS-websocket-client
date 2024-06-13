@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Websocket</title>
+</head>
+
+<body>
+    <h2>Notificaciones</h2>
+    <ul id="notificaciones">
+
+    </ul>
+
+    <script>
+        const listaNotificaciones = document.getElementById("notificaciones");
+        const socket = new WebSocket("ws://localhost:8080");
+
+        socket.onopen = () => {
+            console.log("cliente conectado al servidor");
+
+            socket.send(JSON.stringify({ action: "getNotifications" }));
+        }
+
+        socket.onclose = () => {
+            console.log("cliente desconectado");
+        }
+
+        socket.onmessage = (event) => {
+            const dataJson = JSON.parse(event.data);
+
+            switch (dataJson.event) {
+                case "getNotifications":
+                    mostrarNotificaciones(dataJson.data);
+                    break;
+                case "newNotification":
+                    mostrarNotificacion(dataJson.data);
+                    break;
+            }
+        }
+
+        function mostrarNotificacion(notificacion) {
+            const li = document.createElement("li");
+            li.innerText = notificacion.cuerpo;
+
+            listaNotificaciones.appendChild(li);
+        }
+
+        function mostrarNotificaciones(notificaciones) {
+            listaNotificaciones.innerHTML = '';
+            for (let notificacion of notificaciones) {
+                mostrarNotificacion(notificacion);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
